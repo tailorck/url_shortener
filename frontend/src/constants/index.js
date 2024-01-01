@@ -1,0 +1,1 @@
+export * as LandingStaticContent from './landingPage';
