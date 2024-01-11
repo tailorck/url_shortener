@@ -31,7 +31,7 @@ def get_url(url: UrlLookup, response_class=RedirectResponse):
         raise HTTPException(status_code=404, detail="Record not found")
 
     url_dict = model_to_dict(url)
-    r.set(url_dict["short_url"], json.dumps(url_dict, default=str))
+    r.set(url_dict["short_url"], json.dumps(url_dict, default=str), ex=60*60*24)
 
     # return url_dict
     return RedirectResponse(url.long_url, status_code=302)
@@ -47,13 +47,14 @@ def post_url(url: UrlCreate):
         raise HTTPException(status_code=400, detail="Unable to hash url")
 
     data = response.json()
+    short_url = f"http://www.short.url/{data['hash']}"
 
     try:
         url = UrlModel.create(
-            short_url=f"http://www.short.url/{data['hash']}",
+            short_url=short_url,
             long_url=url.long_url
         )
     except IntegrityError as e:
-        return HTTPException(status_code=409, detail="Record already exists")
+        url = UrlModel.get(short_url=short_url)
 
     return model_to_dict(url)

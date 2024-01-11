@@ -4,6 +4,16 @@ import peewee
 from pydantic import BaseModel
 from pydantic.utils import GetterDict
 
+from .constants import LONG_URL_MAX_LENGTH
+
+
+def length_check(url: str) -> str:
+    assert len(url) < LONG_URL_MAX_LENGTH, "Long url is too long"
+    return url
+
+
+LongUrl = Annotated[str, AfterValidator(length_check)]
+
 
 class PeeweeGetterDict(GetterDict):
     def get(self, key: Any, default: Any = None):
@@ -14,7 +24,7 @@ class PeeweeGetterDict(GetterDict):
 
 
 class UrlCreate(BaseModel):
-    long_url: str
+    long_url: LongUrl
 
 
 class UrlLookup(BaseModel):
